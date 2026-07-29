@@ -140,8 +140,6 @@ app.use(rejectNestedObjects);
 // Enable HTTP response compression for responses exceeding 1KB (1024 bytes)
 app.use(compression({ threshold: 1024 }));
 
-scheduleCleanupJob(prisma);
-
 const USER_DATABASE = {
   'client*localhost': 'GAPUQZH3WZUXHEMUGZN5ZYU4D4GHCFEMOGUINU6MF345GBD2QXNYYIEQ',
   'lekan*localhost': 'GAPUQZH3WZUXHEMUGZN5ZYU4D4GHCFEMOGUINU6MF345GBD2QXNYYIEQ',
@@ -887,6 +885,10 @@ const gracefulShutdown = (server, prismaClient, signal) => {
 
 
 if (require.main === module) {
+  // Schedule the stale-account cleanup job only when running as the main process.
+  // This prevents background timers from leaking when the app is imported in tests.
+  scheduleCleanupJob(prisma);
+
   const server = app.listen(PORT, '0.0.0.0', () => {
     logger.info(`Server successfully initialized on port ${PORT}`);
   });

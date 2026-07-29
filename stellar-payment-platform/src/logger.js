@@ -1,4 +1,5 @@
 const path = require('path');
+const fs = require('fs');
 const winston = require('winston');
 require('winston-daily-rotate-file');
 
@@ -10,6 +11,11 @@ require('winston-daily-rotate-file');
 // Logs live in <stellar-payment-platform>/logs by default. LOG_DIR can point the
 // transports somewhere else (e.g. a mounted volume in Docker).
 const LOG_DIR = process.env.LOG_DIR || path.join(__dirname, '..', 'logs');
+
+// Ensure the log directory exists before opening any file transports.
+// In CI environments the directory may not be pre-created, so mkdirSync with
+// { recursive: true } guarantees the path exists without error when already present.
+fs.mkdirSync(LOG_DIR, { recursive: true });
 const LOG_LEVEL = process.env.LOG_LEVEL || (process.env.NODE_ENV === 'production' ? 'info' : 'debug');
 const MAX_SIZE = process.env.LOG_MAX_SIZE || '20m';
 const MAX_FILES = process.env.LOG_MAX_FILES || '14d';
